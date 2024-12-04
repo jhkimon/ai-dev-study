@@ -10,13 +10,14 @@ WORKDIR /app
 COPY . .
 
 # Install Python dependencies
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install --upgrade pip && pip install -r app/requirements.txt && pip install streamlit
 
-# Expose port 8000
+# Expose ports for FastAPI and Streamlit
 EXPOSE 8000
+EXPOSE 8501
 
-# Entry point to ensure compatibility with Vast.ai
-ENTRYPOINT ["/bin/sh", "-c", "mkdir -p /tmp && chmod 1777 /tmp && exec \"$@\"", "--"]
+# Install process manager
+RUN pip install gunicorn
 
-# Command for FastAPI server
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to start both FastAPI and Streamlit
+CMD ["sh", "-c", "gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 app.main:app & streamlit run frontend/app.py --server.port=8501 --server.address=0.0.0.0"]

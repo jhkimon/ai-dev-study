@@ -33,7 +33,12 @@ with tab1:
                     if response.status_code == 200:
                         st.success("Classification successful!")
                         results = response.json()["results"]
-                        st.json(results)
+
+                        # Extract max label and probability
+                        max_label = max(results, key=results.get)
+                        max_prob = results[max_label]
+
+                        st.write(f"**{max_label}**일 확률은 {max_prob:.2f}%입니다.")
                     else:
                         st.error(f"Error: {response.json()['error']}")
                 except Exception as e:
@@ -60,7 +65,7 @@ with tab2:
                     if response.status_code == 200:
                         st.success("Image generated successfully!")
                         image = Image.open(io.BytesIO(response.content))
-                        st.image(image, caption="Generated Image", use_column_width=True)
+                        st.image(image, caption="Generated Image", use_container_width=True)
                     else:
                         st.error(f"Error: {response.json()['error']}")
                 except Exception as e:

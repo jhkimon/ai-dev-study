@@ -14,7 +14,7 @@ class TextToImageGenerator:
         self.pipe = StableDiffusionPipeline.from_pretrained(model_name, torch_dtype=torch.float32)
         self.pipe = self.pipe.to("cuda" if torch.cuda.is_available() else "cpu")
 
-    def generate_image(self, prompt: str, image_size: tuple = (512, 512), num_inference_steps: int = 15) -> Image.Image:
+    def generate_image(self, prompt: str, image_size: tuple = (512, 512), num_inference_steps: int = 80) -> Image.Image:
         """
         Generate a single image from the given text prompt.
         Reduce inference steps for faster generation.

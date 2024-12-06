@@ -1,10 +1,19 @@
 FROM python:3.12-slim
 
+# Ensure necessary system updates
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 # Ensure /tmp permissions for Vast.ai
-RUN mkdir -p /tmp && chmod 1777 /tmp
+RUN mkdir -p /tmp && chmod -R 1777 /tmp
+
+# Set environment variables for Vast.ai compatibility
+ENV DATA_DIRECTORY=/workspace
 
 # Working directory
-WORKDIR /app 
+WORKDIR /app
 
 # Copy project files
 COPY . .

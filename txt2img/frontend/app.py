@@ -3,8 +3,13 @@ import requests
 from PIL import Image
 import io
 import os
+from dotenv import load_dotenv
 
-# Get absolute path for assets
+# .env
+load_dotenv()
+SERVER_URL = os.getenv("SERVER_URL", "http://localhost:8000")
+
+# 사진 불러오기
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSETS_DIR = os.path.join(BASE_DIR, "assets")
 
@@ -12,7 +17,7 @@ SAMPLE_IMAGE_1_PATH = os.path.join(ASSETS_DIR, "cha.jpg")
 SAMPLE_IMAGE_2_PATH = os.path.join(ASSETS_DIR, "hanni.jpg")
 SAMPLE_IMAGE_3_PATH = os.path.join(ASSETS_DIR, "cat.jpg")
 st.title("Image Comparison")
-tab1, tab2, tab3 = st.tabs(["나와 닮은 동물 찾기", "인물 생성기", "닮은 꼴 찾기"])
+tab1, tab2, tab3 = st.tabs(["닮은 동물 찾기", "닮은 사람 찾기", "오늘의 선물"])
 
 # Tab 1: Image Classification
 with tab1:
@@ -34,7 +39,8 @@ with tab1:
             with st.spinner("이미지 분류중..."):
                 try:
                     response = requests.post(
-                        "http://localhost:8000/image-to-text",
+                        
+                        f"{SERVER_URL}/image-to-text",
                         files={"file": uploaded_image},
                         data={"labels": labels}
                     )
@@ -52,35 +58,8 @@ with tab1:
                 except Exception as e:
                     st.error(f"Error connecting to API: {str(e)}")
 
-# Tab 2: Text-to-Image Generator
+# Tab 2: Image Comparison
 with tab2:
-    st.header("인물 생성기")
-
-    # Prompt input
-    prompt = st.text_input("만들고 싶은 인물의 특징에 대해 알려주세요.")
-
-    if st.button("Generate Image"):
-        if not prompt.strip():
-            st.error("프롬프트를 입력해주세요.")
-        else:
-            # Perform text-to-image generation
-            with st.spinner("이미지 생성 중.."):
-                try:
-                    response = requests.post(
-                        "http://localhost:8000/text-to-image",
-                        data={"prompt": prompt}
-                    )
-                    if response.status_code == 200:
-                        st.success("Image generated successfully!")
-                        image = Image.open(io.BytesIO(response.content))
-                        st.image(image, caption="Generated Image", use_container_width=True)
-                    else:
-                        st.error(f"Error: {response.json()['error']}")
-                except Exception as e:
-                    st.error(f"API 연결 오류: {str(e)}")
-
-# Tab 3: Image Comparison
-with tab3:
     st.header("닮은 꼴 찾기")
 
     # Display sample images
@@ -137,7 +116,7 @@ with tab3:
                         "file2": (os.path.basename(image2), open(image2, "rb")) if isinstance(image2, str) else ("uploaded2", image2)
                     }
                     response = requests.post(
-                        "http://localhost:8000/compare-images",
+                        f"{SERVER_URL}/compare-images",
                         files=files
                     )
                     if response.status_code == 200:
@@ -146,5 +125,36 @@ with tab3:
                         st.write(f"첫 번째 사진과 두 번쨰 사진은 **{similarity_score:.2f}**% 만큼 닮았습니다.")
                     else:
                         st.error(f"에러: {response.json()['error']}")
+                except Exception as e:
+                    st.error(f"API 연결 오류: {str(e)}")
+
+# Tab 3: Text-to-Image Generator
+with tab3:
+    st.header("오늘의 선물 받아보기")
+
+    # Prompt input
+    prompt = st.text_input("받고 싶은 선물에 대해 알려주세요.")
+    st.markdown(
+        "<p style='font-size:12px; color:gray;'>** 예시: A ceramic coffee mug, white with gold patterns, on a wooden table, natural lighting</p>",
+        unsafe_allow_html=True
+    )
+
+    if st.button("Generate Image"):
+        if not prompt.strip():
+            st.error("프롬프트를 입력해주세요.")
+        else:
+            # Perform text-to-image generation
+            with st.spinner("이미지 생성 중.."):
+                try:
+                    response = requests.post(
+                        f"{SERVER_URL}/text-to-image",
+                        data={"prompt": prompt}
+                    )
+                    if response.status_code == 200:
+                        st.success("Image generated successfully!")
+                        image = Image.open(io.BytesIO(response.content))
+                        st.image(image, caption="Generated Image", use_container_width=True)
+                    else:
+                        st.error(f"Error: {response.json()['error']}")
                 except Exception as e:
                     st.error(f"API 연결 오류: {str(e)}")

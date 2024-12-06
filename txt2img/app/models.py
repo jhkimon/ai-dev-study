@@ -7,26 +7,39 @@ from PIL import Image
 import torch
 
 class TextToImageGenerator:
-    def __init__(self, model_name: str = "runwayml/stable-diffusion-v1-5"):
+    def __init__(self, model_name: str = "stabilityai/stable-diffusion-2-1"):
         """
-        Initialize the Stable Diffusion model pipeline.
+        Initialize the Stable Diffusion model pipeline with optimized settings.
         """
-        self.pipe = StableDiffusionPipeline.from_pretrained(model_name, torch_dtype=torch.float32)
-        self.pipe = self.pipe.to("cuda" if torch.cuda.is_available() else "cpu")
+        self.pipe = StableDiffusionPipeline.from_pretrained(
+            model_name, torch_dtype=torch.float32
+        )
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.pipe = self.pipe.to(device)
 
-    def generate_image(self, prompt: str, image_size: tuple = (512, 512), num_inference_steps: int = 80) -> Image.Image:
+    def generate_image(
+        self,
+        prompt: str,
+        image_size: tuple = (512, 512),
+        num_inference_steps: int = 100,
+        guidance_scale: float = 12.5, 
+        negative_prompt: str = "blurry, distorted, cartoonish, unrealistic"  
+    ) -> Image.Image:
         """
-        Generate a single image from the given text prompt.
-        Reduce inference steps for faster generation.
+        Generate a image from the given text prompt.
         """
-        try:
-            # Generate image using the pipeline with reduced inference steps
-            result = self.pipe(prompt, height=image_size[0], width=image_size[1], num_inference_steps=num_inference_steps)
-            image = result.images[0]  # Get the first image
-            return image
-        except Exception as e:
-            raise ValueError(f"Error generating image: {str(e)}")
-           
+        # Generate the image using the pipeline with optimized parameters
+        result = self.pipe(
+            prompt=prompt,
+            height=image_size[0],
+            width=image_size[1],
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
+            negative_prompt=negative_prompt,
+        )
+        return result.images[0]  # Return the first image
+
+       
 class CLIPClassifier:
     def __init__(self, model_name: str = "openai/clip-vit-base-patch16"):
         self.model = CLIPModel.from_pretrained(model_name)

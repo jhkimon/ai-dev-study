@@ -1,6 +1,6 @@
 fastapi
-uvicorn 
-torch 
+uvicorn
+torch
 torchvision
 transformers
 streamlit
@@ -8,3 +8,4 @@ pillow
 python-multipart
 diffusers
 accelerate
+python-dotenv

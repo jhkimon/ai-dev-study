@@ -66,3 +66,24 @@ class CLIPClassifier:
             return results
         except Exception as e:
             raise ValueError(f"Error during result formatting: {e}") # formatting 오류 처리
+        
+class ImageComparator:
+    def __init__(self, classifier: CLIPClassifier):
+        self.classifier = classifier
+
+    def compare(self, image1: Image.Image, image2: Image.Image) -> float:
+        try:
+            # Preprocess the images
+            inputs1 = self.classifier.processor(images=image1, return_tensors="pt")
+            inputs2 = self.classifier.processor(images=image2, return_tensors="pt")
+
+            # Get image embeddings
+            with torch.no_grad():
+                image_features1 = self.classifier.model.get_image_features(**inputs1)
+                image_features2 = self.classifier.model.get_image_features(**inputs2)
+
+            # Compute cosine similarity
+            similarity = torch.nn.functional.cosine_similarity(image_features1, image_features2) * 100
+            return similarity.item()
+        except Exception as e:
+            raise ValueError(f"Error during comparison: {e}")

@@ -6,6 +6,8 @@ from diffusers import StableDiffusionPipeline
 from PIL import Image
 import torch
 
+
+
 class TextToImageGenerator:
     def __init__(self, model_name: str = "stabilityai/stable-diffusion-2-1"):
         """

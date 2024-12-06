@@ -5,11 +5,21 @@ from app.models import CLIPClassifier, TextToImageGenerator, ImageComparator
 from PIL import Image
 import io
 import torch
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+CLIP_MODEL_NAME = os.getenv("CLIP_MODEL_NAME", "openai/clip-vit-base-patch16")
+STABLE_DIFFUSION_MODEL_NAME = os.getenv("STABLE_DIFFUSION_MODEL_NAME", "stabilityai/stable-diffusion-2-1")
+FASTAPI_HOST = os.getenv("FASTAPI_HOST", "0.0.0.0")
+FASTAPI_PORT = int(os.getenv("FASTAPI_PORT", 8000))
 
 app = FastAPI()
-clip_classifier = CLIPClassifier()
-text_to_image_generator = TextToImageGenerator()
+clip_classifier = CLIPClassifier(model_name=CLIP_MODEL_NAME)
+text_to_image_generator = TextToImageGenerator(model_name=STABLE_DIFFUSION_MODEL_NAME)
 image_comparator = ImageComparator(clip_classifier)
+
 
 @app.post("/text-to-image")
 async def text_to_image(prompt: str = Form(...)):
@@ -108,3 +118,8 @@ async def compare_images(file1: UploadFile = File(...), file2: UploadFile = File
         return JSONResponse(content={"similarity_score": similarity_score})
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
+    
+# Run server using environment variables
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host=FASTAPI_HOST, port=FASTAPI_PORT)

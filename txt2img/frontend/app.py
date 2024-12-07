@@ -3,11 +3,11 @@ import requests
 from PIL import Image
 import io
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 # .env
-load_dotenv()
-SERVER_URL = os.getenv("SERVER_URL", "http://localhost:8000")
+# load_dotenv()
+SERVER_URL = "http://localhost:8000"
 
 # 사진 불러오기
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
